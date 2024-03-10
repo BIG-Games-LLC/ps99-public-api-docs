@@ -2,7 +2,7 @@
 name: Support request
 about: Ask a question to receive help
 title: ''
-labels: ''
+labels: support
 assignees: ''
 
 ---
