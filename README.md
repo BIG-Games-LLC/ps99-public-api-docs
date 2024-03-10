@@ -53,16 +53,16 @@ echo $response;
 ?>
 ```
 
-## Authentication:
-Authentication is not required to access the Pet Simulator 99 Public API. You can start using the API right away without the need for any authentication credentials.
-
-## Rate Limiting:
-We encourage users to avoid spamming the API with excessive requests. Please cache your requests and limit requests to 100 per minute per IP address.
-
 ## Standard Responses:
 The API follows a standard response format for successful and error responses:
 - **Successful Response**: Returns a status code of 200 with JSON data containing a 'status' field set to 'ok' and optional 'data' field with the response message.
 - **Error Response**: Returns a JSON object with a 'status' field set to 'error' and an 'error' field containing an error message. Additionally, an 'ignore' flag is included to indicate that the error can be safely ignored.
+
+## Caching Policy:
+Data from the API is cached for 60 seconds, except for Recent Average Price (RAP) data, which is cached for 4 hours.
+
+## Rate Limiting:
+We encourage users to avoid spamming the API with excessive requests. Please cache your requests and limit requests to 100 per minute per IP address.
 
 ## Versioning:
 We strive to maintain backward compatibility with all API versions. Any changes that may affect existing integrations will be clearly documented in the changelog.
