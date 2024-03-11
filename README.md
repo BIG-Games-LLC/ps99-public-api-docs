@@ -56,7 +56,7 @@ echo $response;
 ## Standard Responses:
 The API follows a standard response format for successful and error responses:
 - **Successful Response**: Returns a status code of 200 with JSON data containing a 'status' field set to 'ok' and optional 'data' field with the response message.
-- **Error Response**: Returns a JSON object with a 'status' field set to 'error' and an 'error' field containing an error message. Additionally, an 'ignore' flag is included to indicate that the error can be safely ignored.
+- **Error Response**: Returns a status code of 400 with JSON data containing a 'status' field set to 'error' and an 'error' field containing an error message. Additionally, an 'ignore' flag is included to indicate that the error can be safely ignored.
 
 ## Caching Policy:
 Data from the API is cached for 60 seconds, except for Recent Average Price (RAP) data, which is cached for 4 hours.
