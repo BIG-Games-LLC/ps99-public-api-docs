@@ -72,7 +72,7 @@ class Rap:
             return {"internal_id": item_id, "item_name": item_name, "rap": rap, "category": category}
 
         elif category in ["Fruit", "Misc", "Egg", "Lootbox", "Ultimate"]:
-            return {"internal_id": item_id, "item_name": item_id, "rap": rap}
+            return {"internal_id": item_id, "item_name": item_id, "rap": rap, "category": category}
 
         elif category == "Pet":
 
