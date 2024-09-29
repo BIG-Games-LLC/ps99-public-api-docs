@@ -13,7 +13,7 @@ https://docs.biggamesapi.io/
 ### JavaScript Example:
 ```javascript
 // Example using Fetch API in JavaScript
-fetch('https://biggamesapi.io/api/collections')
+fetch('https://ps99.biggamesapi.io/api/collections')
   .then(response => response.json())
   .then(data => console.log(data))
   .catch(error => console.error('Error:', error));
@@ -24,7 +24,7 @@ fetch('https://biggamesapi.io/api/collections')
 # Example using requests library in Python
 import requests
 
-response = requests.get('https://biggamesapi.io/api/collections')
+response = requests.get('https://ps99.biggamesapi.io/api/collections')
 data = response.json()
 print(data)
 ```
@@ -36,7 +36,7 @@ print(data)
 $curl = curl_init();
 
 curl_setopt_array($curl, array(
-  CURLOPT_URL => 'https://biggamesapi.io/api/collections',
+  CURLOPT_URL => 'https://ps99.biggamesapi.io/api/collections',
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_ENCODING => '',
   CURLOPT_MAXREDIRS => 10,
