@@ -51,7 +51,7 @@ PKCE (pronounced "pixie") adds a second layer of protection on top of this. Befo
 sequenceDiagram
     participant U as Player (browser)
     participant Y as Your app
-    participant D as index.biggames.io
+    participant D as db.biggames.io
     participant A as ps99.biggamesapi.io
 
     Y->>Y: Generate code_verifier + code_challenge (S256)
@@ -89,7 +89,7 @@ Store `code_verifier` server-side, keyed to the `state` value you will generate 
 Send the player's browser to `/oauth/authorize` with the following query parameters:
 
 ```http
-https://index.biggames.io/oauth/authorize
+https://db.biggames.io/oauth/authorize
   ?client_id=YOUR_CLIENT_ID
   &redirect_uri=https://yourapp.example/callback
   &scope=player-data:pet-simulator-99:profile:read+player-data:pet-simulator-99:inventory:read
@@ -121,14 +121,14 @@ After the player approves, the dashboard issues a 302 redirect to your `redirect
 
 ### Step 5 — Exchange the code for a token
 
-POST to `https://index.biggames.io/oauth/token` with an `application/x-www-form-urlencoded` body. Send your credentials using **HTTP Basic authentication**: the `Authorization` header contains `Basic ` followed by Base64-encoded `client_id:client_secret`.
+POST to `https://db.biggames.io/oauth/token` with an `application/x-www-form-urlencoded` body. Send your credentials using **HTTP Basic authentication**: the `Authorization` header contains `Basic ` followed by Base64-encoded `client_id:client_secret`.
 
 ```python
 import requests, base64
 
 basic = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
 resp = requests.post(
-    "https://index.biggames.io/oauth/token",
+    "https://db.biggames.io/oauth/token",
     data={
         "grant_type": "authorization_code",
         "code": code,

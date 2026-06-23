@@ -54,7 +54,7 @@ After saving, the dashboard shows you a `client_id` (public — safe to ship in 
 OAuth gets you a short-lived access token that proves a specific player has authorized your app — without you ever seeing their password. This is the part where the player sees a consent screen and approves your app. Redirect them to the authorization URL with your parameters filled in:
 
 ```http
-GET https://index.biggames.io/oauth/authorize
+GET https://db.biggames.io/oauth/authorize
   ?client_id=YOUR_CLIENT_ID
   &redirect_uri=https://yourapp.example/callback
   &scope=player-data:pet-simulator-99:profile:read
@@ -66,7 +66,7 @@ GET https://index.biggames.io/oauth/authorize
 After the player approves, they're sent back to your `redirect_uri` with `?code=...&state=...` appended. Verify that `state` matches what you sent — this prevents cross-site request forgery attacks. Then exchange the code for an access token:
 
 ```bash
-curl -X POST https://index.biggames.io/oauth/token \
+curl -X POST https://db.biggames.io/oauth/token \
   -u "YOUR_CLIENT_ID:YOUR_CLIENT_SECRET" \
   -d 'grant_type=authorization_code' \
   -d 'code=THE_CODE_FROM_CALLBACK' \
