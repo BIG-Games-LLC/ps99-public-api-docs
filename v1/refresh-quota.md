@@ -27,11 +27,11 @@ information is mirrored in response headers.
 
 ## When a fresh snapshot is pulled (and when it isn't)
 
-A call only spends a quota slot when **all** of these are true:
+A call spends a quota slot when **both** of these are true:
 
-1. The current snapshot is **older than 5 minutes**, and
-2. The player has **logged into the game since** that snapshot was taken, and
-3. The player still has quota left for the day.
+1. The current snapshot is **older than 5 minutes** (or you pass
+   [`?refresh=true`](#forcing-a-refresh)), and
+2. The player still has quota left for the day.
 
 Otherwise the cached snapshot is served for free. The `refresh.skipped` field names the
 reason a fresh pull was skipped:
@@ -39,8 +39,17 @@ reason a fresh pull was skipped:
 | `skipped` value | Meaning |
 | --- | --- |
 | `"fresh"` | The snapshot is under 5 minutes old. Served from cache; no slot spent. |
-| `"cache-extension"` | The player hasn't logged in since the snapshot was taken, so a re-pull would return identical data. Served from cache; no slot spent. |
 | `null` | A fresh pull was attempted on this call (it either spent a slot, or the quota was already exhausted — check `quotaExhausted`). |
+
+## Forcing a refresh
+
+Append `?refresh=true` (or `?refresh=1`) to any `/v1/account/*` read to force a fresh
+Open Cloud pull immediately, bypassing the 5-minute freshness window. A forced pull still
+spends a quota slot and is still bounded by the daily limit — once the quota is exhausted,
+`?refresh=true` returns the most recent snapshot with `quotaExhausted: true`, exactly like
+an ordinary read. Use this for an explicit, user-initiated "refresh now"; don't attach it
+to routine reads, and watch `refresh.nextRefreshEligibleAt` so you don't force a pull that
+would only return identical data.
 
 ## What happens when the quota runs out
 
@@ -64,7 +73,7 @@ Present on every `/v1/account/*` response (for anonymous public reads it is `nul
 | `resetsAt` | string | ISO 8601 timestamp of the next quota reset (next UTC midnight). |
 | `nextRefreshEligibleAt` | string | ISO 8601 timestamp when the current snapshot becomes eligible for a fresh pull (snapshot time + 5 minutes). |
 | `quotaExhausted` | boolean | `true` when the daily limit is spent. The current snapshot is still served. |
-| `skipped` | string \| null | Why no fresh pull happened: `"fresh"`, `"cache-extension"`, or `null`. See the table above. |
+| `skipped` | string \| null | Why no fresh pull happened: `"fresh"` or `null`. See the table above. |
 
 ### Examples
 
