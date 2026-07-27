@@ -60,7 +60,7 @@ Error field reference:
 | 401 | Missing, invalid, expired, or rotated bearer token. Only returned by `/v1/account/*` endpoints. |
 | 403 | Token does not have the required scope for the requested resource. Only returned by `/v1/account/*` endpoints. |
 | 404 | Resource not found. Returned by `/v1/players/:slug`, `/v1/clans/players/:userId`, `/v1/clans/battles/:battleId`, and `/v1/leagues/{:name,players/:userId}`. |
-| 429 | Rate-limited (per-minute limits). The response includes a `Retry-After` header (value in seconds). The daily refresh quota does **not** use 429 — see [Refresh quota](#refresh-quota-v1account) below. |
+| 429 | Rate-limited (per-minute limits). The response includes a `Retry-After` header (value in seconds). The daily refresh quota does **not** use 429 — see [Refresh quota](#refresh-quota-v1account-and-v1playersslug) below. |
 | 500 | Internal server error. |
 
 Note: 200 also covers some "soft" cases. A `/v1/account/*` call for a player with no save returns `200` with `data: null`; an exhausted daily refresh quota still returns `200` with the last snapshot. See [Freshness & the refresh quota](refresh-quota.md).
@@ -141,22 +141,25 @@ The response also includes a `Retry-After` header whose value is the number of s
 Retry-After: 42
 ```
 
-### Refresh quota (`/v1/account/*`)
+### Refresh quota (`/v1/account/*` and `/v1/players/:slug`)
 
-Separate from the per-minute limits above, account endpoints enforce a **daily quota on
-how often fresh data is pulled from Roblox** — 10/day for standard players and 30/day for
-VIP, counted per player and shared across all apps. Most calls are served from a cached
-snapshot and cost nothing; only an actual fresh pull spends a slot. Running out does
-**not** return 429 — you keep getting the last snapshot with `quotaExhausted: true`.
+Separate from the per-minute limits above, player data endpoints enforce a **daily quota
+on how often fresh data is pulled from Roblox** — 48/day for standard players and 96/day
+for VIP (one refresh per 30 / 15 minutes, spread across the day), counted per player and
+shared across the official site, public profile reads, and all apps. Most calls are
+served from a cached snapshot and cost nothing; only an actual fresh pull spends a slot.
+Running out does **not** return 429 — you keep getting the last snapshot with
+`quotaExhausted: true`. Public `/v1/players/:slug` reads spend from the same budget
+(behind a per-player cooldown) but expose no quota state.
 
 Every account response carries a `refresh` object and these headers:
 
 ```
-X-RateLimit-Limit: 10
-X-RateLimit-Remaining: 6
+X-RateLimit-Limit: 48
+X-RateLimit-Remaining: 44
 X-RateLimit-Reset: 1748476800
 X-RateLimit-Resource: player-refresh
-RateLimit-Policy: 10;w=86400;name=player-refresh
+RateLimit-Policy: 48;w=86400;name=player-refresh
 ```
 
 The full behavior — when a refresh happens, the `refresh` object fields, and how to handle

@@ -29,6 +29,27 @@ Look up a single player by username or Roblox user ID.
 
 **Cache-Control:** `public, max-age=300, s-maxage=900, stale-while-revalidate=1800`
 
+### Data freshness
+
+Reading a public profile keeps it fresh — you don't have to do anything special. When a
+request asks for at least one public view and the underlying snapshot is older than the
+player's refresh cooldown (**30 minutes** for standard players, **15 minutes** for VIP),
+the API pulls a fresh snapshot from Roblox inline before responding. Inside the cooldown,
+reads are served from the snapshot for free.
+
+Freshness state is reported per view: `fetchedAt` is the snapshot time and `isStale`
+flags a snapshot older than 7 days. Public responses carry no quota details — the
+refresh budget behind this (a shared per-player daily quota, sized to the cooldown
+cadence) is documented in [Freshness & the refresh quota](refresh-quota.md).
+
+Two consequences worth noting:
+
+- `no_recent_data` is temporary: a read for a player whose snapshot has aged out
+  triggers a re-pull, so a follow-up request shortly after usually has data.
+- The [cache-control policy](overview.md#caching) means a CDN-cached response can
+  add up to its own max-age on top of the cooldown; the snapshot behind a popular
+  profile still refreshes on the cooldown cadence.
+
 ### Include parameter
 
 The `?include=` query parameter determines whether a `views` map appears in the response.

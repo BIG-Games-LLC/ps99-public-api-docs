@@ -116,7 +116,7 @@ The `ignore: true` field is a hint to logging tools that this is an expected cli
 
 - [v1/overview.md](v1/overview.md) — response envelope, errors, rate limits, caching
 - [v1/authentication.md](v1/authentication.md) — full OAuth 2.0 + PKCE flow with security notes
-- [v1/refresh-quota.md](v1/refresh-quota.md) — how account data is cached and the daily fresh-pull budget
+- [v1/refresh-quota.md](v1/refresh-quota.md) — how player data is cached, the read-triggered refresh on public profiles, and the daily fresh-pull budget
 - [v1/players.md](v1/players.md) — public player profile lookups, search, featured, list, total
 - [v1/account.md](v1/account.md) — all 7 authenticated endpoints
 - [v1/clans.md](v1/clans.md) — clans aggregator and battle detail

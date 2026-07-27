@@ -10,7 +10,7 @@ Three views (`profile`, `extendedProfile`, `itemIndex`) are **pass-through**: th
 
 These endpoints read from a server-side cached snapshot of the player's Roblox save. The "no save snapshot" shape differs by endpoint: the **snapshot views** (`profile`, `extendedProfile`, `itemIndex`) return `{ "status": "ok", "data": null }` — the call succeeded but there's no save to read; the **enriched views** (`inventory`, `trades`, `booth`, `mail`) return their normal envelope with an empty array (e.g. `{ "items": [] }` or `{ "entries": [] }`).
 
-**Freshness & the refresh quota.** Because the data comes from a cached snapshot, a response may be a few minutes old, and pulling a *fresh* snapshot from Roblox is limited by a per-player **daily quota** (10/day standard, 30/day VIP). Every account response includes a `refresh` object and `X-RateLimit-*` headers describing that budget. Read [Freshness & the refresh quota](refresh-quota.md) before building anything that needs up-to-the-minute data — it explains when a refresh actually happens and what to do when the quota is spent.
+**Freshness & the refresh quota.** Because the data comes from a cached snapshot, a response may be a few minutes old, and pulling a *fresh* snapshot from Roblox is limited by a per-player **daily quota** (48/day standard, 96/day VIP, shared with public profile reads). Every account response includes a `refresh` object and `X-RateLimit-*` headers describing that budget. Read [Freshness & the refresh quota](refresh-quota.md) before building anything that needs up-to-the-minute data — it explains when a refresh actually happens and what to do when the quota is spent.
 
 See [v1/overview.md](overview.md) for the response envelope, error codes, and rate limits.
 
@@ -142,7 +142,7 @@ fresh-data budget and whether this call used it. The same state is mirrored in
 "refresh": {
   "consumedThisCall": false,
   "used": 3,
-  "limit": 10,
+  "limit": 48,
   "resetsAt": "2026-05-29T00:00:00.000Z",
   "nextRefreshEligibleAt": "2026-05-28T14:32:00.000Z",
   "quotaExhausted": false,
