@@ -418,7 +418,7 @@ The `inventory` view returns the player's full item list and their enriched equi
       "class": "Pet",
       "id": "Huge Cosmic Axolotl",
       "count": 1,
-      "stackKey": "{\"id\":\"Huge Cosmic Axolotl\",\"sh\":1}",
+      "stackKey": "{\"id\":\"Huge Cosmic Axolotl\",\"_am\":1,\"sh\":1,\"createdAt\":1723308371}",
       "displayName": "Huge Cosmic Axolotl",
       "icon": "rbxassetid://18291048120",
       "goldenIcon": "",
@@ -428,7 +428,7 @@ The `inventory` view returns the player's full item list and their enriched equi
       "rarity": "Mythical",
       "rarityNumber": 5,
       "collection": "Pets",
-      "rawData": { "id": "Huge Cosmic Axolotl", "_am": 1, "sh": 1 }
+      "rawData": { "id": "Huge Cosmic Axolotl", "_am": 1, "sh": 1, "createdAt": 1723308371 }
     }
   ],
   "equipped": {

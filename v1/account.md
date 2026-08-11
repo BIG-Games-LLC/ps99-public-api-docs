@@ -29,7 +29,7 @@ Used by `GET /v1/account/inventory`. Source: `services/player-inventory.ts`.
 | `class` | string | Inventory category as written in the save (`Pet`, `Charm`, `Egg`, `Hoverboard`, `Consumable`, etc.). |
 | `id` | string | Game-config id (e.g. `Cat`, `Diamonds`, `Huge Cosmic Axolotl`). |
 | `count` | number | How many of this stack the player owns. |
-| `stackKey` | string | Stable per-stack identifier. Two stacks of the same pet with different variants produce different `stackKey` values. Safe to use as a React key or database id. |
+| `stackKey` | string | Stable per-stack identifier, a JSON string of the whitelisted `rawData` fields. Two stacks of the same pet with different variants — or different `createdAt` — produce different `stackKey` values. Safe to use as a React key or database id. Items indistinguishable on every published field share one row, with `count` summed. |
 | `rawData` | object | Whitelisted item flags from the save. See the `rawData` sub-table below. |
 | `displayName` | string | Human-readable item name resolved from the item database. Falls back to `id` when unmatched. |
 | `icon` | string | Roblox asset id string, format `rbxassetid://<n>`. Empty string when unresolved. |
@@ -81,7 +81,9 @@ Each item in `given`, `received`, or `item` is one of two shapes, discriminated 
 
 ### `rawData` fields
 
-The `rawData` object on any item contains only the following whitelisted keys from the save. All other save fields (`_uq`, `_ct`, `_cu`, `_oc`, `_ol`, `_tr`, `_sb`, `_to`, `_lk`, `cv`, `xp`, `uid`) are stripped at the parser boundary and never sent to the client.
+The `rawData` object on any item contains only the following whitelisted keys from the save. All other save fields (`_uq`, `_cu`, `_oc`, `_ol`, `_tr`, `_sb`, `_to`, `_lk`, `_nk`, `cv`, `xp`, `uid`) are stripped at the parser boundary and never sent to the client — including inside `stackKey`.
+
+The internal `_uq` block is withheld because it records the players who previously owned an item (`_cu` the original creator, `_ol` the full ownership chain), who have not opted into appearing on another player's profile. Its creation timestamp is the one part published, as `createdAt`.
 
 | Key | Meaning |
 |---|---|
@@ -90,6 +92,7 @@ The `rawData` object on any item contains only the following whitelisted keys fr
 | `sh` | Shiny flag. Value is `1` or `true` when shiny; absent otherwise. |
 | `pt` | Paint variant. `1` = Golden, `2` = Rainbow. Absent for unpainted items. Applied consistently across every endpoint that derives golden/rainbow flags or a `variant` label. |
 | `tn` | Tier number for Charms, Enchants, Potions, and Consumables. |
+| `createdAt` | Unix timestamp (**seconds**) for when the item was created. Present only on individually-tracked items — huges, exclusives and similar, which the game stores one-per-entry. Absent on ordinary stackable items, and absent on the small number of tracked items whose save entry carries no timestamp. **Inventory rows only** — trade, booth and mail items do not carry it. |
 
 ---
 
@@ -237,8 +240,8 @@ Each `EquippedPet`: `{ uid, slot, id, displayName, icon, goldenIcon, shiny, rain
         "class": "Pet",
         "id": "Huge Cosmic Axolotl",
         "count": 1,
-        "stackKey": "{\"id\":\"Huge Cosmic Axolotl\",\"sh\":1}",
-        "rawData": { "id": "Huge Cosmic Axolotl", "_am": 1, "sh": 1 },
+        "stackKey": "{\"id\":\"Huge Cosmic Axolotl\",\"_am\":1,\"sh\":1,\"createdAt\":1723308371}",
+        "rawData": { "id": "Huge Cosmic Axolotl", "_am": 1, "sh": 1, "createdAt": 1723308371 },
         "displayName": "Huge Cosmic Axolotl",
         "icon": "rbxassetid://18291048120",
         "goldenIcon": "",
