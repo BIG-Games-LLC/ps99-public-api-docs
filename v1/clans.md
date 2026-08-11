@@ -220,7 +220,7 @@ print(r.json())
     },
     "stats": {
       "participatingClans": 48,
-      "sampledClans": 100,
+      "sampledClans": 48,
       "totalClanPoints": 18340000,
       "totalContributors": 512,
       "bestMedal": "gold"
@@ -279,8 +279,8 @@ print(r.json())
 
 | Field | Type | Description |
 |---|---|---|
-| `participatingClans` | number | How many sampled clans have a non-zero points entry for this battle. |
-| `sampledClans` | number | Total clans checked (default 100). |
+| `participatingClans` | number | How many clans appear in this response (equals the number of `topClans` entries). |
+| `sampledClans` | number | How many clans were sampled for this battle: the battle's scoring clans, capped at the top 100 by points in this battle. Currently always equals `participatingClans`. |
 | `totalClanPoints` | number | Sum of all clan points across participating clans. |
 | `totalContributors` | number | Total individual contribution records counted (not deduplicated across clans). |
 | `bestMedal` | string \| null | Highest medal earned by any sampled clan. Values: `"gold"`, `"silver"`, `"bronze"`, `"good"`, or `null`. |
@@ -333,6 +333,6 @@ print(r.json())
 
 ## Caveats
 
-- **Sample coverage:** Player and clan data is drawn from a fixed-size sample of top clans. Missing data means not covered by the sample, not absent from the game.
+- **Sample coverage:** The player aggregate endpoints draw from a fixed-size sample of the top clans by all-time battle points (default 25). Missing data there means not covered by the sample, not absent from the game. Battle detail (`/battles/{battleId}`) samples the top 100 clans **by points in that battle**, so its `topClans` is the battle's actual leaderboard down to rank ~100; clans below that cutoff are not listed.
 - **Server cache:** Each aggregate (player list or battle detail) is held in memory for 3 minutes. The very first request after a cache miss may take slightly longer while the aggregate is rebuilt.
 - **Display names:** Roblox display names are resolved in bulk at aggregate time. If the Roblox API is unavailable, names fall back to the numeric user ID as a string.
