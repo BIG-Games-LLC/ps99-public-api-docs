@@ -6,7 +6,7 @@ Successful `/v1/account/*` responses are `Cache-Control: private, no-cache`; err
 
 There are **7 endpoints**, one per player-data view: `inventory`, `profile`, `extendedProfile`, `itemIndex`, `trades`, `booth`, and `mail`. These are the same 7 views, with the same `data` shapes, as the public [`/v1/players/:slug?include=`](players.md#public-views) surface — the only difference is gating: a bearer token + OAuth scope here, per-view `publicViews` opt-in there.
 
-Three views (`profile`, `extendedProfile`, `itemIndex`) are **pass-through**: their `data` is a projection of whitelisted save keys, in the save's native PascalCase shape. The remaining four views (`inventory`, `trades`, `booth`, `mail`) keep curated envelopes with item-database enrichment and Roblox username resolution.
+Three views (`profile`, `extendedProfile`, `itemIndex`) are **pass-through**: their `data` is a projection of whitelisted save keys, in the save's native PascalCase shape (single exception: `profile`'s `Currency` field is derived — see its field table). The remaining four views (`inventory`, `trades`, `booth`, `mail`) keep curated envelopes with item-database enrichment and Roblox username resolution.
 
 These endpoints read from a server-side cached snapshot of the player's Roblox save. The "no save snapshot" shape differs by endpoint: the **snapshot views** (`profile`, `extendedProfile`, `itemIndex`) return `{ "status": "ok", "data": null }` — the call succeeded but there's no save to read; the **enriched views** (`inventory`, `trades`, `booth`, `mail`) return their normal envelope with an empty array (e.g. `{ "items": [] }` or `{ "entries": [] }`).
 
@@ -310,6 +310,8 @@ Each `EquippedPet`: `{ uid, slot, id, displayName, icon, goldenIcon, shiny, rain
 
 Returns a flat pass-through of whitelisted player-state save keys, in the save's native PascalCase shape. There is no curation layer — fields are objects when the save stores objects, numbers when the save stores numbers. To compute summary counts (e.g. how many zones unlocked) walk the underlying object yourself.
 
+Single exception: **`Currency` is derived, not passed through.** The save's top-level `Currency` key is a vestigial always-zero struct (`{"Coins": 0, "Diamonds": 0, "Tokens": 0}`); the balances players actually hold live in internal per-currency stacks. This view re-keys those stacks by currency id into the shape documented below, so `Currency.Diamonds._am` is the player's real diamond balance.
+
 The sensitive subset (`Gamepasses`, `Products`, `RobuxSpent`) is carved out into [`GET /v1/account/extendedProfile`](#get-v1accountextendedprofile) and is never returned here.
 
 **Scope:** `player-data:pet-simulator-99:profile:read`  
@@ -370,7 +372,7 @@ print(r.json())
 
 | Field | Type | Description |
 |---|---|---|
-| `Currency` | object | All balances keyed by currency id, each entry `{ id, _am }`. Includes Diamonds and event currencies. |
+| `Currency` | object | All balances keyed by currency id, each entry `{ id, _am }`. Includes Diamonds and event currencies. **Derived** (the one non-pass-through field): built from the save's internal per-currency stacks, with `_am` summed per id. Omitted when the save has no currency data. |
 
 **Statistics**
 
@@ -470,6 +472,7 @@ For inventory + equipped loadout, item-index discovery, trade/booth/mail history
 
 - Field shapes mirror the save document — keys are PascalCase, objects stay objects, arrays stay arrays. To get a count of unlocked zones, do `Object.keys(data.UnlockedZones).length`.
 - `Statistics` is the full raw dictionary including login activity and playtime. If you intended Robux spend, gamepass ownership, or product purchases, request the `extendedProfile` scope.
+- **Before 2026-08-13** this endpoint returned the save's raw top-level `Currency` key — a legacy struct that reads `{"Coins": 0, "Diamonds": 0, "Tokens": 0}` for every player. If your integration saw all-zero balances, that was this bug ([#142](https://github.com/BIG-Games-LLC/ps99-public-api-docs/issues/142)); `Currency` now carries the real balances in the documented shape.
 - For 401/403/429 errors, see [Common error responses](#common-error-responses).
 
 ---

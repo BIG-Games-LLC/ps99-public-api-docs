@@ -341,7 +341,7 @@ over. Useful for showing a count or computing how many pages exist.
 
 A player's public profile is split into 7 independently toggled views, controlled from the in-game dashboard.
 
-Three views — `profile`, `extendedProfile`, `itemIndex` — are **pass-through**: their payload is a projection of whitelisted save keys in the save's native PascalCase shape. The other four — `inventory`, `trades`, `booth`, `mail` — keep curated envelopes with item-database enrichment and Roblox username resolution.
+Three views — `profile`, `extendedProfile`, `itemIndex` — are **pass-through**: their payload is a projection of whitelisted save keys in the save's native PascalCase shape (single exception: `profile`'s `Currency` field is derived from the save's internal currency stacks). The other four — `inventory`, `trades`, `booth`, `mail` — keep curated envelopes with item-database enrichment and Roblox username resolution.
 
 `profile` ships the player-state save keys (progression, currencies, statistics, mastery, achievements, zones, miscellaneous flags). `extendedProfile` is the separately-gated sensitive carve-out: `Gamepasses`, `Products`, `RobuxSpent`. Enabling `profile` never exposes those three — they reach clients only through `extendedProfile`.
 
@@ -363,7 +363,7 @@ The seven `?include=` keys correspond 1:1 to the authenticated [`/v1/account/*` 
 
 ### profile
 
-The `profile` view returns a flat pass-through of whitelisted player-state save keys, in the save's native PascalCase shape. Only keys present in the save appear (no `null` placeholders). The sensitive carve-out (`Gamepasses`, `Products`, `RobuxSpent`) is never returned here — it lives only in [`extendedProfile`](#extendedprofile).
+The `profile` view returns a flat pass-through of whitelisted player-state save keys, in the save's native PascalCase shape. Only keys present in the save appear (no `null` placeholders). The sensitive carve-out (`Gamepasses`, `Products`, `RobuxSpent`) is never returned here — it lives only in [`extendedProfile`](#extendedprofile). The one derived field is `Currency`: it is re-keyed from the save's internal per-currency stacks (summed per id) so it carries the player's real balances, not the save's vestigial always-zero top-level `Currency` struct.
 
 ```json
 {
