@@ -149,7 +149,7 @@ The same object is returned by `/v1/leagues/seasons/active` and as `meta` in `/v
 | `durationSeconds` | number \| null | `finishTime - startTime`; `null` when either is absent. |
 | `state` | string | `"upcoming"`, `"live"` or `"past"` (see [Season states](#season-states)). |
 | `run` | string \| null | Which data set holds this season's leagues. Usually equal to `id`; a season that was reset carries a suffix (e.g. `DeepBackroomsLeague2026B`). `null` when the season has no league data. |
-| `headlineReward` | object \| null | The most notable reward item across the season's rewards (Titanic and Huge pets first, then the rarest variant). A [reward item](#reward-items). `null` when the season has no rewards. |
+| `headlineReward` | object \| null | The most notable reward item across the season's rewards (Gargantuan, Titanic and Huge pets first, then the rarest variant). A [reward item](#reward-items). `null` when the season has no rewards. |
 | `placementRewards` | array | Reward bands by placement, ordered by `best`. Empty when none. See [Placement rewards](#placement-rewards). |
 | `finalized` | object \| null | Payout record for a finished season; `null` until the game backend has paid it or captured its final standings. |
 | `finalized.completedAt` | number \| null | Unix timestamp (seconds) when the payout completed. |
@@ -730,7 +730,7 @@ print(r.json())
 - Cache: `public, max-age=60, s-maxage=180, stale-while-revalidate=600`
 - The 404 response uses `Cache-Control: no-store`.
 - The aggregate is rebuilt at most once every 3 minutes server-side, per season.
-- Each entry is one contribution, not one player. A duplicated entry for the same player in the same league counts once, but the list includes entries from players who have since left their league (the ones league detail marks `Counted: false`), so a player who moved leagues can appear once per league.
+- Each entry is one contribution the board counts: a duplicated entry for the same player counts once, and entries from players who have since left their league (the ones league detail marks `Counted: false`) are left out.
 - A player whose contribution is outside the top 500 will not appear here. This is a sample, not an exhaustive list. For a ranking of counted contributors in the top leagues, use `topPlayers` in [season detail](#get-v1leaguesseasonsseasonid).
 
 ---

@@ -273,7 +273,7 @@ print(r.json())
 | `durationSeconds` | number \| null | `finishTime - startTime`; `null` when either timestamp is absent. |
 | `hasGoals` | boolean | Whether this battle has goal-based milestones. |
 | `state` | string | `"upcoming"`, `"live"`, or `"past"` — derived from current time vs. `startTime`/`finishTime`. |
-| `headlineReward` | object \| null | The most notable [reward item](#reward-items) across the battle's rewards (Titanic and Huge pets first, then the rarest variant), or `null` if the battle has no rewards. |
+| `headlineReward` | object \| null | The most notable [reward item](#reward-items) across the battle's rewards (Gargantuan, Titanic and Huge pets first, then the rarest variant), or `null` if the battle has no rewards. |
 | `placementRewards` | array | [Placement reward](#placement-rewards) bands from the battle config, ordered by `best`; empty array if none. |
 | `tieredRewards` | object | Tiered reward buckets keyed by `good`, `bronze`, `silver`, `gold`, each an array of [reward items](#reward-items). Omitted entirely when the battle config has no tiered rewards. |
 
