@@ -223,7 +223,8 @@ print(r.json())
       "sampledClans": 48,
       "totalClanPoints": 18340000,
       "totalContributors": 512,
-      "bestMedal": "gold"
+      "bestMedal": "gold",
+      "awardsProcessed": true
     },
     "topClans": [
       {
@@ -236,7 +237,8 @@ print(r.json())
         "points": 4200000,
         "reportedPlace": 1,
         "medal": "gold",
-        "contributorCount": 28
+        "contributorCount": 28,
+        "awardsProcessed": true
       }
       // ...
     ],
@@ -271,9 +273,9 @@ print(r.json())
 | `durationSeconds` | number \| null | `finishTime - startTime`; `null` when either timestamp is absent. |
 | `hasGoals` | boolean | Whether this battle has goal-based milestones. |
 | `state` | string | `"upcoming"`, `"live"`, or `"past"` — derived from current time vs. `startTime`/`finishTime`. |
-| `headlineReward` | any \| null | Top reward object from the battle config, or `null` if not set. |
-| `placementRewards` | array | Ordered placement reward entries from the battle config; empty array if none. |
-| `tieredRewards` | object | Tiered reward buckets keyed by `good`, `bronze`, `silver`, `gold`, each an array of reward item objects. Omitted entirely when the battle config has no tiered rewards. |
+| `headlineReward` | object \| null | The most notable [reward item](#reward-items) across the battle's rewards (Titanic and Huge pets first, then the rarest variant), or `null` if the battle has no rewards. |
+| `placementRewards` | array | [Placement reward](#placement-rewards) bands from the battle config, ordered by `best`; empty array if none. |
+| `tieredRewards` | object | Tiered reward buckets keyed by `good`, `bronze`, `silver`, `gold`, each an array of [reward items](#reward-items). Omitted entirely when the battle config has no tiered rewards. |
 
 **`stats` fields**
 
@@ -284,6 +286,7 @@ print(r.json())
 | `totalClanPoints` | number | Sum of all clan points across participating clans. |
 | `totalContributors` | number | Total individual contribution records counted (not deduplicated across clans). |
 | `bestMedal` | string \| null | Highest medal earned by any sampled clan. Values: `"gold"`, `"silver"`, `"bronze"`, `"good"`, or `null`. |
+| `awardsProcessed` | boolean | `true` once the game backend has handed out this battle's medals and rewards (any sampled clan has `awardsProcessed: true`). After `finishTime` the backend processes the battle and marks each medalled clan; until it does, this stays `false`. A `past` battle with `awardsProcessed: false` has finished but its medals are still pending. Reads `false` while a battle is `upcoming` or `live`. |
 
 **`topClans[]` fields**
 
@@ -299,6 +302,7 @@ print(r.json())
 | `reportedPlace` | number \| null | Official placement from the clan's stored battle data; `null` if not recorded. |
 | `medal` | string \| null | Medal earned: `"gold"`, `"silver"`, `"bronze"`, `"good"`, or `null`. |
 | `contributorCount` | number | Number of individual contribution records for this clan in this battle. |
+| `awardsProcessed` | boolean | `true` when the backend has processed this clan's awards for the battle. The backend marks medalled clans, so a clan that earned no medal can read `false` even after the battle is processed; use `stats.awardsProcessed` for the battle as a whole. |
 
 **`topPlayers[]` fields**
 
@@ -315,6 +319,37 @@ print(r.json())
 | `clan.countryCode` | string | Two-letter country code. |
 | `clan.place` | number \| null | Clan's reported place in this battle, or `null`. |
 
+### Placement rewards
+
+Each `placementRewards[]` entry:
+
+| Field | Type | Description |
+|---|---|---|
+| `placement` | string | Readable label for the band: `"1st"`, `"2–10"`, `"5001+"` and so on. |
+| `best` | number \| null | Best (lowest) clan rank in the band. |
+| `worst` | number \| null | Worst (highest) clan rank in the band. |
+| `items` | array | The [reward items](#reward-items) for the band (currently always one). |
+| `contributorPlacement` | string | _(Optional)_ Readable label for the contributor ranks inside the clan that receive this reward, e.g. `"1–100"`. Present only when the reward is limited to a clan's top contributors. |
+| `bestContributor` | number | _(Optional)_ Best contributor rank inside the clan that receives this reward. |
+| `worstContributorIfFinite` | number | _(Optional)_ Worst contributor rank inside the clan that receives this reward. |
+
+### Reward items
+
+Reward items appear in `headlineReward`, `placementRewards[].items` and the `tieredRewards` arrays. League seasons use the same shape ([leagues.md](leagues.md#reward-items)).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Item id (for a pet, its name, e.g. `"Titanic Empyrean Dragon"`). |
+| `variant` | string | `"regular"`, `"golden"`, `"rainbow"`, `"shiny"`, `"shinyGold"` or `"shinyRainbow"`. `"unknown"` for a variant the API does not recognise. |
+| `particleTier` | number | The raw tier: `0` regular, `1` Golden, `2` Rainbow. |
+| `shiny` | boolean | `true` for a Shiny item. Independent of `particleTier`: a Shiny Rainbow pet is `particleTier: 2` with `shiny: true`, and a plain Rainbow pet is `particleTier: 2` with `shiny: false`. |
+| `amount` | number | How many of the item. |
+| `icon` | string | _(Optional)_ Asset ID string for the item icon. Omitted when the item is not found in the item catalog. |
+| `collection` | string | _(Optional)_ Item collection, e.g. `"Pets"`, `"Hoverboards"`, `"Booths"`, `"Lootboxes"`. Omitted when the item is not found. |
+| `rarity` | string | _(Optional)_ Item rarity, when the catalog has one. |
+
+Before 2026-10-24, `variant` read `particleTier` as if it were Shiny (`1` was `"shinyGold"`, `2` was `"shinyRainbow"`) and ignored the Shiny flag. See the [changelog](../changelog/2026-10-24-leagues-seasons-and-leaderboards.md).
+
 ### Other responses
 
 - `400 Invalid battleId.` — `battleId` contains characters outside `[A-Za-z0-9_]` or is empty. Envelope: `{ "status": "error", "error": { "message": "Invalid battleId.", "ignore": true } }`.
@@ -327,6 +362,7 @@ print(r.json())
 - The 404 response uses `Cache-Control: no-store`.
 - `topPlayers` is capped at 200 entries, sorted by points descending.
 - `topClans` is sorted by `reportedPlace` ascending (nulls last), then by `points` descending as a tiebreaker.
+- Battle detail is rebuilt at most every 3 minutes server-side. Once a `past` battle has `awardsProcessed: true` it is kept for a day; until then it stays on the 3-minute refresh, so the flag turns `true` within minutes of the backend processing the battle.
 - The response also includes `podium` (the top 3 players, same shape as `topPlayers` entries) and `isActive` (a boolean, currently always `false` at the route layer) at the top level of `data`. These are supplemental fields and may change in a future version.
 
 ---
