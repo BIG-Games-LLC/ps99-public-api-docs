@@ -144,24 +144,46 @@ print(r.json())
     "importedAt": "2026-10-24T18:47:59.978Z",
     "added": 34,
     "changed": 67,
+    "previous": 27435,
+    "next": null,
     "collections": {
       "Boosts": {
         "added": [
           {
             "configName": "Boost | Luck",
+            "displayName": "Luck Boost",
+            "category": "Boosts",
+            "rarity": null,
             "data": "https://ps99.biggamesapi.io/api/collection/Boosts?configName=Boost%20%7C%20Luck",
             "icon": "https://ps99.biggamesapi.io/image/84698880918228"
           }
         ],
         "changed": []
       },
-      "Ranks": {
-        "added": [],
+      "Pets": {
+        "added": [
+          {
+            "configName": "Gargantuan Angelus",
+            "displayName": "Gargantuan Angelus",
+            "category": "Gargantuan",
+            "rarity": "Exclusive",
+            "data": "https://ps99.biggamesapi.io/api/collection/Pets?configName=Gargantuan%20Angelus",
+            "icon": "https://ps99.biggamesapi.io/image/87594997751673"
+          }
+        ],
         "changed": [
           {
-            "configName": "1 | Noob",
-            "data": "https://ps99.biggamesapi.io/api/collection/Ranks?configName=1%20%7C%20Noob",
-            "icon": null
+            "configName": "Huge Hippokin",
+            "displayName": "Huge Hippokin",
+            "category": "Huge",
+            "rarity": "Exclusive",
+            "data": "https://ps99.biggamesapi.io/api/collection/Pets?configName=Huge%20Hippokin",
+            "icon": "https://ps99.biggamesapi.io/image/100633317245412",
+            "changes": [
+              { "path": ["indexDesc"], "before": "Coming soon!", "after": "🎃 Tier 4 reward from Halloween Hatch Wars quests! Season Pass: Week 1" },
+              { "path": ["exclusiveLevel"], "after": 2 }
+            ],
+            "more": 0
           }
         ]
       }
@@ -172,7 +194,14 @@ print(r.json())
 
 ### Response fields
 
-The summary fields from [`GET /v1/releases`](#get-v1releases), except that `collections` maps each collection name to:
+The summary fields from [`GET /v1/releases`](#get-v1releases), plus:
+
+| Field | Type | Description |
+|---|---|---|
+| `previous` | number \| null | The next older release that added or changed items, or `null`. Releases with no changes are skipped. |
+| `next` | number \| null | The next newer release that added or changed items, or `null`. |
+
+`collections` maps each collection name to:
 
 | Field | Type | Description |
 |---|---|---|
@@ -184,10 +213,30 @@ Each item:
 | Field | Type | Description |
 |---|---|---|
 | `configName` | string | The item's name in its collection, the same `configName` `/api/collection` returns. |
+| `displayName` | string | The name players see (for tiered items such as Enchants, the first tier's name). Falls back to `configName`. |
+| `category` | string \| null | The item's category in its collection. |
+| `rarity` | string \| null | The item's rarity name, when it has one. |
 | `data` | string | URL of the item's current data in [`/api/collection`](../legacy/README.md#get-collection). |
 | `icon` | string \| null | URL of the item's icon through [`/image`](../legacy/README.md#get-image), or `null` when the item has no icon (for example Ranks). |
 
-`data` and `icon` point at the item **as it is now**, not as it was in that release. Pets use their regular (not golden) thumbnail.
+Changed items also have:
+
+| Field | Type | Description |
+|---|---|---|
+| `changes` | array \| null | What changed in the item's data, field by field (below). `null` when no field changes were stored for this release: releases before 2026-10-25 list changed items by name only. |
+| `more` | number | How many further changes were left out of `changes` (at most 60 are kept per item). |
+
+Each entry in `changes`:
+
+| Field | Type | Description |
+|---|---|---|
+| `path` | array | Where in the item's `configData` the value changed, as keys and array indexes, for example `["Tiers", 0, "Power"]`. |
+| `before` | any | The old value. Missing when the field was added. |
+| `after` | any | The new value. Missing when the field was removed. |
+
+A value longer than 400 characters of JSON is replaced by `{ "truncated": true, "chars": n }`. Runtime values the game fills in on its own, and fields `/api/collection` leaves out, never appear in `changes`.
+
+`displayName`, `category`, `rarity`, `data` and `icon` describe the item **as it is now**, not as it was in that release. Pets use their regular (not golden) thumbnail.
 
 ### Other responses
 
@@ -236,8 +285,11 @@ print(r.json())
         "publishedAt": "2026-10-24T18:44:03.000Z",
         "importedAt": "2026-10-24T18:47:59.978Z",
         "collection": "Boosts",
-        "configName": "Boost | Luck",
         "change": "added",
+        "configName": "Boost | Luck",
+        "displayName": "Luck Boost",
+        "category": "Boosts",
+        "rarity": null,
         "data": "https://ps99.biggamesapi.io/api/collection/Boosts?configName=Boost%20%7C%20Luck",
         "icon": "https://ps99.biggamesapi.io/image/84698880918228"
       },
@@ -246,8 +298,11 @@ print(r.json())
         "publishedAt": "2026-10-24T18:44:03.000Z",
         "importedAt": "2026-10-24T18:47:59.978Z",
         "collection": "Boosts",
-        "configName": "Boost | HugeLuck",
         "change": "added",
+        "configName": "Boost | HugeLuck",
+        "displayName": "Huge Luck Boost",
+        "category": "Boosts",
+        "rarity": null,
         "data": "https://ps99.biggamesapi.io/api/collection/Boosts?configName=Boost%20%7C%20HugeLuck",
         "icon": "https://ps99.biggamesapi.io/image/130520371018728"
       }
@@ -272,7 +327,7 @@ print(r.json())
 | `pageSize` | number | The page size used. |
 | `hasMore` | boolean | `true` when another page follows. |
 
-Each row has `version`, `publishedAt` and `importedAt` of its release, plus `collection`, `configName`, `change` (`"added"` or `"changed"`), `data` and `icon` as in [`GET /v1/releases/:version`](#get-v1releasesversion).
+Each row has `version`, `publishedAt` and `importedAt` of its release, plus `collection`, `change` (`"added"` or `"changed"`) and the item fields `configName`, `displayName`, `category`, `rarity`, `data` and `icon` as in [`GET /v1/releases/:version`](#get-v1releasesversion). Rows leave out field `changes`. Read the release for those.
 
 ### Polling
 

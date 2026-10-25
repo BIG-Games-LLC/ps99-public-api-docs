@@ -98,6 +98,20 @@ The details from the specified collection. This contains a list of configuration
 curl --location 'https://ps99.biggamesapi.io/api/collection/Pets'
 ```
 
+**Query Parameters (all optional)**
+
+| Parameter | Description |
+|---|---|
+| `configName` | Only the item with this `configName`. |
+| `category` | Only items in this category. |
+| `changedSince` | Only items created or changed at or after this moment: an ISO 8601 date (`2026-10-24T00:00:00Z`) or epoch milliseconds. Compared with `dateModified`, or `dateCreated` when there is no `dateModified`. An item with neither date is left out. A value that is not a date returns 400 with `changedSince must be an ISO date or epoch milliseconds`. |
+
+```curl
+curl --location 'https://ps99.biggamesapi.io/api/collection/Pets?changedSince=2026-10-24T00:00:00Z'
+```
+
+To find out which items a game update added or changed, see [/v1/releases](../v1/releases.md).
+
 **Example Response**
 ```json
 {
