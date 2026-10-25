@@ -56,10 +56,10 @@ Error field reference:
 | Code | Meaning |
 | --- | --- |
 | 200 | OK — request succeeded. |
-| 400 | Bad request: a required or malformed query/path parameter. Returned by `/v1/players` (missing/invalid `page`/`pageSize`/`sort`/`sortOrder`), `/v1/leagues/:name`, `/v1/leagues/seasons/:seasonId`, `/v1/leaderboards/:id` and `/v1/leaderboards/:id/players/:userId`, and the `:userId`/`:battleId` lookups under `/v1/clans` and `/v1/leagues`. |
+| 400 | Bad request: a required or malformed query/path parameter. Returned by `/v1/players` (missing/invalid `page`/`pageSize`/`sort`/`sortOrder`), `/v1/leagues/:name`, `/v1/leagues/seasons/:seasonId`, `/v1/leaderboards/:id` and `/v1/leaderboards/:id/players/:userId`, `/v1/releases/:version`, `/v1/items/changes`, and the `:userId`/`:battleId` lookups under `/v1/clans` and `/v1/leagues`. |
 | 401 | Missing, invalid, expired, or rotated bearer token. Only returned by `/v1/account/*` endpoints. |
 | 403 | Token does not have the required scope for the requested resource. Only returned by `/v1/account/*` endpoints. |
-| 404 | Resource not found. Returned by `/v1/players/:slug`, `/v1/clans/players/:userId`, `/v1/clans/battles/:battleId`, `/v1/leagues/{:name,players/:userId,seasons/active,seasons/:seasonId}`, any `/v1/leagues` endpoint given an unknown `?season=`, and `/v1/leaderboards/{:id,:id/players/:userId}`. |
+| 404 | Resource not found. Returned by `/v1/players/:slug`, `/v1/clans/players/:userId`, `/v1/clans/battles/:battleId`, `/v1/leagues/{:name,players/:userId,seasons/active,seasons/:seasonId}`, any `/v1/leagues` endpoint given an unknown `?season=`, `/v1/leaderboards/{:id,:id/players/:userId}`, and `/v1/releases/:version`. |
 | 429 | Rate-limited (per-minute limits). The response includes a `Retry-After` header (value in seconds). The daily refresh quota does **not** use 429 — see [Refresh quota](#refresh-quota-v1account-and-v1playersslug) below. |
 | 500 | Internal server error. |
 
@@ -165,7 +165,7 @@ RateLimit-Policy: 48;w=86400;name=player-refresh
 The full behavior — when a refresh happens, the `refresh` object fields, and how to handle
 exhaustion — lives in [Freshness & the refresh quota](refresh-quota.md).
 
-### Public endpoints (`/v1/players/*`, `/v1/clans/*`, `/v1/leagues/*`, `/v1/leaderboards/*`, legacy `/api/*`)
+### Public endpoints (`/v1/players/*`, `/v1/clans/*`, `/v1/leagues/*`, `/v1/leaderboards/*`, `/v1/releases/*`, `/v1/items/*`, legacy `/api/*`)
 
 These endpoints are unauthenticated. Stay under 100 requests per minute per IP and cache responses locally whenever possible. Bursting over this threshold will result in a 429.
 
@@ -181,6 +181,9 @@ The server sets explicit `Cache-Control` headers on every response. Respect them
 | `/v1/clans/*` | `public, max-age=60, s-maxage=180, stale-while-revalidate=600` |
 | `/v1/leagues/*` | `public, max-age=60, s-maxage=180, stale-while-revalidate=600` |
 | `/v1/leaderboards/*` | `public, max-age=60, s-maxage=60, stale-while-revalidate=300` |
+| `/v1/releases` | `public, max-age=300, s-maxage=600, stale-while-revalidate=3600` |
+| `/v1/releases/:version` | `public, max-age=600, s-maxage=3600, stale-while-revalidate=86400` |
+| `/v1/releases/latest`, `/v1/items/changes` | `public, max-age=60, s-maxage=60, stale-while-revalidate=300` |
 | `/v1/account/*` | `private, no-cache` |
 
 The `private, no-cache` value on account endpoints means **never share responses across users**. Do not store them in a shared cache layer.
