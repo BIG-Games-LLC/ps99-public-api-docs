@@ -22,7 +22,7 @@
     `since` next time.
 
 - **`changedSince` on [`/api/collection/:name`](../legacy/README.md#get-collection)**: only
-  the items created or changed at or after an ISO 8601 date or epoch milliseconds.
+  the items created or changed at or after an ISO 8601 date or epoch milliseconds (10+ digits).
 
 ## Notes
 

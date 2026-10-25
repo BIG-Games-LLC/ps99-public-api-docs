@@ -104,7 +104,7 @@ curl --location 'https://ps99.biggamesapi.io/api/collection/Pets'
 |---|---|
 | `configName` | Only the item with this `configName`. |
 | `category` | Only items in this category. |
-| `changedSince` | Only items created or changed at or after this moment: an ISO 8601 date (`2026-10-24T00:00:00Z`) or epoch milliseconds. Compared with `dateModified`, or `dateCreated` when there is no `dateModified`. An item with neither date is left out. A value that is not a date returns 400 with `changedSince must be an ISO date or epoch milliseconds`. |
+| `changedSince` | Only items created or changed at or after this moment: an ISO 8601 date (`2026-10-24T00:00:00Z`) or epoch milliseconds (10+ digits). A shorter number is read as a date, so `2026` means 2026-01-01. Compared with `dateModified`, or `dateCreated` when there is no `dateModified`. An item with neither date is left out. A value that is not a date returns 400 with `changedSince must be an ISO date or epoch milliseconds`. |
 
 ```curl
 curl --location 'https://ps99.biggamesapi.io/api/collection/Pets?changedSince=2026-10-24T00:00:00Z'
