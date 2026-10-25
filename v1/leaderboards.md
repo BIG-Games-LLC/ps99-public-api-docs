@@ -278,7 +278,7 @@ curl 'https://ps99.biggamesapi.io/v1/leaderboards/PSXRebornSpeedrun?pageSize=2'
 | `entries[].Rank` | number | 1-based rank on the board. |
 | `entries[].UserID` | number \| null | Roblox user ID. |
 | `entries[].Name` | string \| null | Roblox username. Present on live rows; always `null` on final rows. |
-| `entries[].DisplayName` | string \| null | Roblox display name. Live rows carry the name stored with the board (or the username). Final rows are resolved by the API and fall back to the string form of `UserID`. |
+| `entries[].DisplayName` | string \| null | Roblox display name. Live rows carry the name stored with the board (or the username). Final rows are named by the API from the game's player records, then Roblox, and fall back to the string form of `UserID` only when neither has the name. |
 | `entries[].Value` | number | The raw stored score (see [Values and codecs](#values-and-codecs)). |
 | `entries[].RewardTier` | number \| null | _(Final rows only)_ The reward tier this rank was paid in, named by the tier's last rank: `3` is the top 3 tier, `100` the top 100 tier. `null` for a rank past `rewardedThroughRank`. |
 
@@ -377,4 +377,4 @@ print(r.json())
 
 - **Depth.** Live boards hold the top rows only (up to 10,000). Final standings go a little past the last rewarded rank. Neither covers every player who scored.
 - **Freshness.** The live copy is refreshed by the game backend every few seconds while the board is in use, and this API re-reads it at most once a minute. The board list (states, `live.updatedAt`) is rebuilt every 5 minutes, so `leaderboard.live.updatedAt` and the page's `updatedAt` can differ.
-- **Names.** Live rows carry the username and display name stored with the board. Final rows only store the user ID; the API resolves display names in bulk, and if the Roblox API is unavailable, a name falls back to the numeric user ID as a string.
+- **Names.** Live rows carry the username and display name stored with the board. Final rows only store the user ID; the API names them from the game's own player records first, then from Roblox, and a name falls back to the numeric user ID as a string only when neither has it.

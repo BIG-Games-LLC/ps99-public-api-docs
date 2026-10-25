@@ -402,7 +402,7 @@ A [season meta object](#get-v1leaguesseasons).
 
 - Cache: `public, max-age=60, s-maxage=180, stale-while-revalidate=600`
 - The 404 response uses `Cache-Control: no-store`.
-- Season detail is rebuilt at most every 3 minutes server-side, and once a day for a `past` season.
+- Season detail is rebuilt at most every 3 minutes server-side, and once a day for a finalized season whose player names have all resolved.
 - `topLeagues`, `topPlayers` and the totals cover the top 100 leagues only. They are not the whole season.
 - `topPlayers` only counts contributions the board counts: a player who left a league is not listed for it.
 - A season with no league data (`meta.run` is `null`) returns zero stats and empty lists, with `rankedLeagues: 0`.
@@ -502,7 +502,7 @@ print(r.json())
 
 - Cache: `public, max-age=60, s-maxage=180, stale-while-revalidate=600`
 - The 404 response uses `Cache-Control: no-store`.
-- Each unique combination of query parameters is cached server-side for up to 60 seconds (a bounded LRU of 1000 entries; high query variety can evict entries sooner). A finished season's ranking is kept for a day.
+- Each unique combination of query parameters is cached server-side for up to 60 seconds (a bounded LRU of 1000 entries; high query variety can evict entries sooner). A finalized season's ranking is kept for a day.
 - Below the ranked depth (the top 1,000 for a season that is not finalized, the captured standings for one that is), pages follow the stored points order and `Rank` is the row's position in that order.
 - `sort=Members` orders by roster size and is computed with an aggregation; the other sorts use indexed fields directly. `sort=Members` returns an empty page past the first 5,000 leagues.
 
@@ -650,7 +650,7 @@ print(r.json())
 - Cache: `public, max-age=60, s-maxage=180, stale-while-revalidate=600`
 - The 404 responses use `Cache-Control: no-store` so negative results are not cached downstream.
 - Below the ranked depth, `Place` is one plus the number of leagues with more stored points. For a finalized season it is never placed inside the captured standings.
-- Display names are resolved in bulk; if the Roblox API is unavailable, a name falls back to the string form of its `UserID`.
+- Display names come from the game's own player records first, then from Roblox. A name only falls back to the numeric user ID as a string when neither has it, which is rare.
 
 ---
 
@@ -808,6 +808,6 @@ The `data` object is a single contributor entry, identical in shape to one eleme
 
 - **Leaderboard is exact; contributors are sampled.** `GET /v1/leagues` paginates over every league in the season. `GET /v1/leagues/players` and `/players/:userId` are drawn from the top 500 contributions only, and season detail from the top 100 leagues.
 - **Ranking depth.** The board order is exact through the top 1,000 leagues (or, for a finalized season, through the captured standings). Below that, order and `Rank` follow the stored points, which can run slightly ahead of effective points for a league whose players left.
-- **Server cache:** The contributor aggregate is held in memory for 3 minutes; leaderboard pages and the ranking for 60 seconds (a day for a finished season); season detail for 3 minutes (a day for a finished season). The first request after a cache miss may take slightly longer.
-- **Display names:** Roblox display names are resolved in bulk. If the Roblox API is unavailable, names fall back to the numeric user ID as a string.
+- **Server cache:** The contributor aggregate is held in memory for 3 minutes; leaderboard pages for 60 seconds; the ranking for 60 seconds (a day once a season is finalized); season detail for 3 minutes (a day once a season is finalized and its player names have resolved). The first request after a cache miss may take slightly longer.
+- **Display names:** Display names come from the game's own player records first, then from Roblox. A name only falls back to the numeric user ID as a string when neither has it, which is rare.
 - **Duplicate names:** League names are not guaranteed unique. `GET /v1/leagues/:name` returns the highest-points match within the season.

@@ -2,11 +2,11 @@
 
 The `/v1/clans` endpoints expose aggregated data drawn from a rolling sample of the top clans in Pet Simulator 99, ranked by all-time battle points. They replace the older [`/api/clan*`](../legacy/README.md) family of routes, offering structured player and battle-level breakdowns in a consistent envelope format (see [overview.md](overview.md) for envelope and caching details). No authentication is required for any of these endpoints.
 
-Data is sampled rather than exhaustive. By default the player aggregate samples the top 25 clans; the battle detail endpoint samples the top 100. A player or clan that does not appear in a response is not guaranteed to be absent from the game — it simply means none of their affiliated clans fell within the current sample. The server maintains a 3-minute internal cache for each aggregate; the HTTP response carries a `public, max-age=60, s-maxage=180, stale-while-revalidate=600` cache header, so browsers hold results for 60 seconds and shared/edge caches for 180 seconds (and may serve stale content for up to a further 600 seconds while they revalidate).
+Data is sampled rather than exhaustive. By default the player aggregate samples the top 25 clans; the battle detail endpoint samples the top 100. A player or clan that does not appear in a response is not guaranteed to be absent from the game; it simply means none of their affiliated clans fell within the current sample. The server maintains a 3-minute internal cache for each aggregate; the HTTP response carries a `public, max-age=60, s-maxage=180, stale-while-revalidate=600` cache header, so browsers hold results for 60 seconds and shared/edge caches for 180 seconds (and may serve stale content for up to a further 600 seconds while they revalidate).
 
 These endpoints are read-only and safe to call from a browser, a server, or a public CDN edge function. Rate limits follow the same global policy as the rest of the v1 API.
 
-> **Heads-up on field casing.** The aggregate endpoints (`/v1/clans/players`, `/v1/clans/players/:userId`) return fields in **PascalCase** (`UserID`, `DisplayName`, `Clan.Name`). The battle detail endpoint (`/v1/clans/battles/:battleId`) returns fields in **camelCase** (`userId`, `displayName`, `clan.name`). A single typed model won't fit both — define them separately.
+> **Heads-up on field casing.** The aggregate endpoints (`/v1/clans/players`, `/v1/clans/players/:userId`) return fields in **PascalCase** (`UserID`, `DisplayName`, `Clan.Name`). The battle detail endpoint (`/v1/clans/battles/:battleId`) returns fields in **camelCase** (`userId`, `displayName`, `clan.name`). A single typed model won't fit both, so define them separately.
 
 ---
 
@@ -96,7 +96,7 @@ print(r.json())
 
 ### Other responses
 
-- `500 (unhandled error in the aggregator/loader)` — Aggregator threw an unexpected error. Envelope: `{ "status": "error", "error": { "message": "Could not load player aggregate.", "ignore": true } }`.
+- `500 (unhandled error in the aggregator/loader)`: Aggregator threw an unexpected error. Envelope: `{ "status": "error", "error": { "message": "Could not load player aggregate.", "ignore": true } }`.
 
 ### Notes
 
@@ -108,7 +108,7 @@ print(r.json())
 
 ## GET /v1/clans/players/:userId
 
-Looks up a single player within the same player aggregate used by `/v1/clans/players`. This is a filtered view — it returns the same data for one player plus metadata about the current battle state, or a 404 if the player is not present in the sample.
+Looks up a single player within the same player aggregate used by `/v1/clans/players`. This is a filtered view: it returns the same data for one player plus metadata about the current battle state, or a 404 if the player is not present in the sample.
 
 **Path parameters**
 
@@ -167,9 +167,9 @@ print(r.json())
 
 ### Other responses
 
-- `400 Invalid userId.` — `userId` is not a finite positive integer (e.g. `0`, a negative number, or a non-numeric string). Envelope: `{ "status": "error", "error": { "message": "Invalid userId.", "ignore": true } }`.
-- `404 Player not found in sampled clans.` — The aggregate loaded successfully but the requested user ID was not found in any of the sampled clans. Envelope: `{ "status": "error", "error": { "message": "Player not found in sampled clans.", "ignore": true } }`.
-- `500 (unhandled error in the aggregator/loader)` — Aggregator threw an unexpected error. Envelope: `{ "status": "error", "error": { "message": "Could not load player lookup.", "ignore": true } }`.
+- `400 Invalid userId.`: `userId` is not a finite positive integer (e.g. `0`, a negative number, or a non-numeric string). Envelope: `{ "status": "error", "error": { "message": "Invalid userId.", "ignore": true } }`.
+- `404 Player not found in sampled clans.`: The aggregate loaded successfully but the requested user ID was not found in any of the sampled clans. Envelope: `{ "status": "error", "error": { "message": "Player not found in sampled clans.", "ignore": true } }`.
+- `500 (unhandled error in the aggregator/loader)`: Aggregator threw an unexpected error. Envelope: `{ "status": "error", "error": { "message": "Could not load player lookup.", "ignore": true } }`.
 
 ### Notes
 
@@ -272,7 +272,7 @@ print(r.json())
 | `finishTime` | number \| null | Unix timestamp (seconds) of battle end. `null` if not configured. |
 | `durationSeconds` | number \| null | `finishTime - startTime`; `null` when either timestamp is absent. |
 | `hasGoals` | boolean | Whether this battle has goal-based milestones. |
-| `state` | string | `"upcoming"`, `"live"`, or `"past"` — derived from current time vs. `startTime`/`finishTime`. |
+| `state` | string | `"upcoming"`, `"live"`, or `"past"`: derived from current time vs. `startTime`/`finishTime`. |
 | `headlineReward` | object \| null | The most notable [reward item](#reward-items) across the battle's rewards (Gargantuan, Titanic and Huge pets first, then the rarest variant), or `null` if the battle has no rewards. |
 | `placementRewards` | array | [Placement reward](#placement-rewards) bands from the battle config, ordered by `best`; empty array if none. |
 | `tieredRewards` | object | Tiered reward buckets keyed by `good`, `bronze`, `silver`, `gold`, each an array of [reward items](#reward-items). Omitted entirely when the battle config has no tiered rewards. |
@@ -352,9 +352,9 @@ Before 2026-10-24, `variant` read `particleTier` as if it were Shiny (`1` was `"
 
 ### Other responses
 
-- `400 Invalid battleId.` — `battleId` contains characters outside `[A-Za-z0-9_]` or is empty. Envelope: `{ "status": "error", "error": { "message": "Invalid battleId.", "ignore": true } }`.
-- `404 Battle not found.` — No matching battle config exists in the database. Envelope: `{ "status": "error", "error": { "message": "Battle not found.", "ignore": true } }`.
-- `500 (unhandled error in the aggregator/loader)` — Loader threw an unexpected error. Envelope: `{ "status": "error", "error": { "message": "Could not load battle detail.", "ignore": true } }`.
+- `400 Invalid battleId.`: `battleId` contains characters outside `[A-Za-z0-9_]` or is empty. Envelope: `{ "status": "error", "error": { "message": "Invalid battleId.", "ignore": true } }`.
+- `404 Battle not found.`: No matching battle config exists in the database. Envelope: `{ "status": "error", "error": { "message": "Battle not found.", "ignore": true } }`.
+- `500 (unhandled error in the aggregator/loader)`: Loader threw an unexpected error. Envelope: `{ "status": "error", "error": { "message": "Could not load battle detail.", "ignore": true } }`.
 
 ### Notes
 
@@ -362,7 +362,7 @@ Before 2026-10-24, `variant` read `particleTier` as if it were Shiny (`1` was `"
 - The 404 response uses `Cache-Control: no-store`.
 - `topPlayers` is capped at 200 entries, sorted by points descending.
 - `topClans` is sorted by `reportedPlace` ascending (nulls last), then by `points` descending as a tiebreaker.
-- Battle detail is rebuilt at most every 3 minutes server-side. Once a `past` battle has `awardsProcessed: true` it is kept for a day; until then it stays on the 3-minute refresh, so the flag turns `true` within minutes of the backend processing the battle.
+- Battle detail is rebuilt at most every 3 minutes server-side. Once a `past` battle has `awardsProcessed: true` and every player name has resolved, it is kept for a day; until then it stays on the 3-minute refresh, so the flag turns `true` within minutes of the backend processing the battle.
 - The response also includes `podium` (the top 3 players, same shape as `topPlayers` entries) and `isActive` (a boolean, currently always `false` at the route layer) at the top level of `data`. These are supplemental fields and may change in a future version.
 
 ---
@@ -371,4 +371,4 @@ Before 2026-10-24, `variant` read `particleTier` as if it were Shiny (`1` was `"
 
 - **Sample coverage:** The player aggregate endpoints draw from a fixed-size sample of the top clans by all-time battle points (default 25). Missing data there means not covered by the sample, not absent from the game. Battle detail (`/battles/{battleId}`) samples the top 100 clans **by points in that battle**, so its `topClans` is the battle's actual leaderboard down to rank ~100; clans below that cutoff are not listed.
 - **Server cache:** Each aggregate (player list or battle detail) is held in memory for 3 minutes. The very first request after a cache miss may take slightly longer while the aggregate is rebuilt.
-- **Display names:** Roblox display names are resolved in bulk at aggregate time. If the Roblox API is unavailable, names fall back to the numeric user ID as a string.
+- **Display names:** Display names come from the game's own player records first, then from Roblox. A name only falls back to the numeric user ID as a string when neither has it, which is rare.
