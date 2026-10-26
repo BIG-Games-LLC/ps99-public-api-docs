@@ -1,6 +1,6 @@
 # Releases feed: `/v1/releases` and `/v1/items/changes`
 
-**Released:** _on deploy_
+**Released:** 2026-10-26
 
 ## Added
 
