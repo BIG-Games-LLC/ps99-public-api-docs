@@ -7,7 +7,7 @@ https://ps99.biggamesapi.io/
 ```
 
 The v1 namespace (`/v1/*`) is the new surface covering authenticated player data, public player
-profiles, clan aggregations, league seasons and leaderboards, and the in-game event leaderboards. See [v1/overview.md](v1/overview.md) for the full reference.
+profiles, clan aggregations, league seasons and leaderboards, the in-game event leaderboards, and the releases feed. See [v1/overview.md](v1/overview.md) for the full reference.
 
 The legacy namespace (`/api/*`) is the original API — fully supported, not deprecated, and still
 the right choice for pet data, item data, RAP, clan listings, and exists lookups. See
@@ -21,6 +21,7 @@ the right choice for pet data, item data, RAP, clan listings, and exists lookups
 | Look up a player's public profile | [/v1/players/](v1/players.md) | None |
 | Browse clan and league leaderboards | [/v1/clans/](v1/clans.md), [/v1/leagues/](v1/leagues.md) | None |
 | Read an in-game event leaderboard, live or final | [/v1/leaderboards/](v1/leaderboards.md) | None |
+| Find out which items a game update added or changed | [/v1/releases/](v1/releases.md) | None |
 | Read a player's personal data (with their permission) | [/v1/account/](v1/account.md) | OAuth (see [authentication](v1/authentication.md)) |
 
 ## Quickstart
@@ -38,6 +39,7 @@ Want to make your first call right now? Walk through the [Quickstart](quickstart
 - [v1 /clans](v1/clans.md) — players aggregator, single-player lookup, battle detail.
 - [v1 /leagues](v1/leagues.md): league seasons and season detail, leagues leaderboard (any season), league detail with place and reward, top contributors.
 - [v1 /leaderboards](v1/leaderboards.md): in-game event leaderboards, live or final standings, one player's row.
+- [v1 /releases](v1/releases.md): releases feed, the items each game update added or changed, and a catch-up feed for bots.
 - [Legacy /api endpoints](legacy/README.md) — the original API.
 - [Changelog](changelog/) — release notes.
 - [Terms](TERMS.md)
