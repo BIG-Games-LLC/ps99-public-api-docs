@@ -14,7 +14,14 @@ These endpoints are read-only and safe to call from a browser, a server, or a pu
 
 Returns a snapshot of every player seen across the sampled top clans, along with their battle statistics aggregated across all battles stored for those clans. This is the broadest view: one array covering every contributor found in the sample.
 
-**No path or query parameters.**
+**Query parameters** (both optional)
+
+| Parameter | Type | Description |
+|---|---|---|
+| `page` | integer | 1-based page. Defaults to `1` when `pageSize` is given. |
+| `pageSize` | integer | Players per page, at most `1000`. Defaults to `1000` when `page` is given. |
+
+With neither parameter the whole aggregate comes back in one response (about 8,000 players, roughly 2 MB). A page past the end returns an empty `players` array, so stop paging when `players` is empty or when you have read `total` players. The aggregate only changes once every few minutes: fetch it once, keep it, and refresh at most once a minute.
 
 ### Example request
 
@@ -68,7 +75,8 @@ print(r.json())
     ],
     "activeBattleConfigName": "GuildBattle_Spring2025",
     "sampledClans": 25,
-    "loadError": null
+    "loadError": null,
+    "total": 8105
   }
 }
 ```
@@ -93,6 +101,9 @@ print(r.json())
 | `activeBattleConfigName` | string \| null | The `configName` of the currently-live clan battle, or `null` when none is active. |
 | `sampledClans` | number | How many clans were included in this aggregate (default 25). |
 | `loadError` | null \| string | `null` on success; an error message string if the underlying clan collection could not be loaded (players array will be empty). |
+| `total` | number | How many players the whole aggregate holds, whatever page you asked for. |
+| `page` | number | _(Only when paging)_ The page returned. |
+| `pageSize` | number | _(Only when paging)_ The page size used, after the cap of 1000. |
 
 ### Other responses
 
